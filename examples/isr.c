@@ -47,6 +47,7 @@
 //	Global variable to count interrupts
 //	Should be declared volatile to make sure the compiler doesn't cache it.
 
+// globaler wert in dem die interrupts / signale gespeichert werden
 static volatile int globalCounter = 0 ;
 
 
@@ -54,7 +55,7 @@ static volatile int globalCounter = 0 ;
  * myInterrupt:
  *********************************************************************************
  */
-
+// methode die immer wenn eine unterbrechung /signal stattfindet aufgerufen wird
 void myInterrupt (void)
 {
   ++globalCounter ;
@@ -76,22 +77,47 @@ int main (void)
     fprintf (stderr, "Unable to setup wiringPi: %s\n", strerror (errno)) ;
     return 1 ;
   }
-
+  
+  
+//#1
+  //register interrupt, everytime the signal changes, call "myInterrupt" and count+1
+  //interrupt registrieren (also immer wenn eine signal änderung stattfindet
   if (wiringPiISR (BUTTON_PIN, INT_EDGE_FALLING, &myInterrupt) < 0)
   {
     fprintf (stderr, "Unable to setup ISR: %s\n", strerror (errno)) ;
     return 1 ;
   }
 
-
+  
+//#2
+  //endless loop
+  //endlos schleife
   for (;;)
   {
+  
+    
+//#3 
+    //Waiting ... print to command line, just to show something is waiting...
+    //Waiting ... ausgeben, im grunde wird hier auf den nächsten interrupt / signal gewartet
     printf ("Waiting ... ") ; fflush (stdout) ;
 
+//#4
+    //endless loop, waiting 100ms between each loop, it basically checks if the counter changed due to the interrupt method which is called on each interrupt / signal
+    //endlosschleife, wartet 100ms zwischen neuer prüfung ob es ein signal gegeben hat
     while (myCounter == globalCounter)
+      //100ms warten
       delay (100) ;
-
+    
+    
+//#5
+    // print new value
+    // neuen wert ausgeben
     printf (" Done. counter: %5d\n", globalCounter) ;
+    
+    
+//#6
+    //save new value, so that the loop on #4 is working (until next interrupt)
+    //neuen wert speichern, damit die endlosschleife bei #4 funktioniert (bis zum nächsten signal/interrupt)
     myCounter = globalCounter ;
   }
 
